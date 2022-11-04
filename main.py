@@ -18,26 +18,34 @@ def get_db():
         db.close()
 
 
-@app.post("/workers/", response_model=schemas.Worker)
-def create_user(worker: schemas.WorkerCreate, db: Session = Depends(get_db)):
-    db_worker = crud.get_worker_by_name(db, name=worker.name)  # it is not necessary unique
+@app.post("/worker/", response_model=schemas.Worker)
+def create_worker(worker: schemas.WorkerCreate, db: Session = Depends(get_db)):
+    db_worker = crud.get_worker_by_phone(db, phone=worker.phone_number)
     if db_worker:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(status_code=400, detail="Worker with this phone number already exists.")
     return crud.create_worker(db=db, worker=worker)
 
 
 @app.get("/workers/", response_model=list[schemas.Worker])
 def read_workers(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    workers = crud.get_workers(db, skip=skip, limit=limit)
+    workers = crud.get_all_workers(db, skip=skip, limit=limit)
     return workers
 
 
 @app.get("/workers/{worker_id}", response_model=schemas.Worker)
-def read_user(worker_id: int, db: Session = Depends(get_db)):
-    db_worker = crud.get_worker(db, worker_id=worker_id)
+def read_worker(worker_id: int, db: Session = Depends(get_db)):
+    db_worker = crud.get_worker_by_id(db, worker_id=worker_id)
     if db_worker is None:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail="Worker not found")
     return db_worker
+
+
+@app.post("/customer/", response_model=schemas.Customer)
+def create_customer(customer: schemas.CustomerCreate, db: Session = Depends(get_db)):
+    db_customer = crud.get_customer_by_phone(db, phone=customer.phone_number)
+    if db_customer:
+        raise HTTPException(status_code=400, detail="Customer with this phone number already exists.")
+    return crud.create_customer(db=db, customer=customer)
 
 
 #@app.post("/users/{user_id}/items/", response_model=schemas.Customer)
