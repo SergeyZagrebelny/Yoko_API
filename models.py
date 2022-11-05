@@ -1,4 +1,10 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Enum
+from sqlalchemy import (Column,
+                        ForeignKey,
+                        Integer,
+                        String,
+                        DateTime,
+                        Enum,
+                        SmallInteger)
 from sqlalchemy.orm import relationship
 
 from database import Base
@@ -19,8 +25,8 @@ class Customer(Base):
     __tablename__ = "customer"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String)
-    phone_number = Column(String, unique=True, index=True)
+    name = Column(String(128))
+    phone_number = Column(String(32), unique=True, index=True)
     sales_points = Column(Integer, ForeignKey("sales_point.id"))
 
     orders = relationship("Order", back_populates="customer")
@@ -29,8 +35,8 @@ class Customer(Base):
 class SalesPoint(Base):
     __tablename__ = "sales_point"
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String)
+    id = Column(SmallInteger, primary_key=True, index=True)  #for memory economy reasons only
+    name = Column(String(128))
     workers_id = Column(Integer, ForeignKey("worker.id"))
 
     workers = relationship("Worker", back_populates="sales_points")
