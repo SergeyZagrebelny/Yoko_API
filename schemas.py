@@ -44,23 +44,22 @@ class Visit(VisitBase):
         orm_mode = True
 
 
-class WorkerBase(BaseModel):
+class WorkerDelete(BaseModel):
+
+    class Config:
+        orm_mode = True
+
+
+class WorkerCreate(WorkerDelete):
     name: str
     phone_number: str
 
 
-class WorkerCreate(WorkerBase):
-    pass
-
-
-class Worker(WorkerBase):
+class Worker(WorkerCreate):
     id: int
     sales_point: int = None
     orders: list[Order] = []
     visits: list[Visit] = []
-
-    class Config:
-        orm_mode = True
 
 
 class SalesPointBase(BaseModel):
@@ -80,18 +79,19 @@ class SalesPoint(SalesPointBase):
         orm_mode = True
 
 
-class CustomerBase(BaseModel):
+class CustomerDelete(BaseModel):
+
+    class Config:
+        orm_mode = True
+
+
+class CustomerCreate(CustomerDelete):
     name: str
     phone_number: str
 
 
-class CustomerCreate(CustomerBase):
-    pass
-
-
-class Customer(CustomerBase):
+class Customer(CustomerCreate):
     id: int
     sales_points: list[SalesPoint] = []
-
-    class Config:
-        orm_mode = True
+    orders: list[Order] = []
+    visits: list[Visit] = []
