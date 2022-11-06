@@ -40,3 +40,21 @@ class BaseService:
         self.db.commit()
         self.db.refresh(db_obj)
         return db_obj
+
+    def delete_by_id(self, obj_id: int):
+        obj = self.db.query(self.db_model).filter(self.db_model.id == obj_id).first()
+        if not obj:
+            raise HTTPException(status_code=404, detail=f"Object with id {obj_id} not found")
+        self.db.delete(obj)
+        self.db.commit()
+        self.db.refresh(obj)
+        return obj
+
+    def delete_by_id(self, obj_phone_number:str):
+        obj = self.db.query(self.db_model).filter(self.db_model.phone_number == obj_phone_number).first()
+        if not obj:
+            raise HTTPException(status_code=404, detail=f"Object with phone_number {obj_phone_number} not found")
+        self.db.delete(obj)
+        self.db.commit()
+        self.db.refresh(obj)
+        return obj
