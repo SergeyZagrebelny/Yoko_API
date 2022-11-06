@@ -50,7 +50,7 @@ class BaseService:
         self.db.refresh(obj)
         return obj
 
-    def delete_by_id(self, obj_phone_number:str):
+    def delete_by_phone(self, obj_phone_number:str):
         obj = self.db.query(self.db_model).filter(self.db_model.phone_number == obj_phone_number).first()
         if not obj:
             raise HTTPException(status_code=404, detail=f"Object with phone_number {obj_phone_number} not found")
@@ -58,3 +58,16 @@ class BaseService:
         self.db.commit()
         self.db.refresh(obj)
         return obj
+
+    def update_phone(self, old_p_number: str, new_p_number: str):
+        user_with_new_p_number = self.db.query(self.db_model).filter(self.db_model.phone_number == new_p_number).first()
+        if user_with_new_p_number:
+            raise HTTPException(status_code=400, detail=f"Phone_number {new_p_number} is already in use")
+        obj = self.db.query(self.db_model).filter(self.db_model.phone_number == old_p_number).first()
+        obj.phone_number = new_p_number
+        self.db.add(obj)
+        self.db.commit()
+        self.db.refresh(obj)
+        return obj
+
+
