@@ -22,15 +22,17 @@ class BaseService:
         return obj
 
     def get_by_name(self, obj_name: str):
+        """Name is not necessary unique"""
+
         obj = self.db.query(self.db_model).filter(self.db_model.name == obj_name).first()
         if not obj:
             raise HTTPException(status_code=404, detail=f"Object with name {obj_name} not found")
         return obj
 
-    def get_by_phone(self, obj_phone_number: str):
-        obj = self.db.query(self.db_model).filter(self.db_model.name == obj_phone_number).first()
+    def get_by_phone(self, obj_ph_number: str):
+        obj = self.db.query(self.db_model).filter(self.db_model.name == obj_ph_number).first()
         if not obj:
-            raise HTTPException(status_code=404, detail=f"Object with phone number {obj_phone_number} not found")
+            raise HTTPException(status_code=404, detail=f"Object with phone number {obj_ph_number} not found")
         return obj
 
     def create(self, person: Optional[schemas.WorkerCreate, schemas.CustomerCreate]):
@@ -50,24 +52,33 @@ class BaseService:
         self.db.refresh(obj)
         return obj
 
-    def delete_by_phone(self, obj_phone_number:str):
-        obj = self.db.query(self.db_model).filter(self.db_model.phone_number == obj_phone_number).first()
+    def delete_by_phone(self, obj_ph_number: str):
+        obj = self.db.query(self.db_model).filter(self.db_model.ph_number == obj_ph_number).first()
         if not obj:
-            raise HTTPException(status_code=404, detail=f"Object with phone_number {obj_phone_number} not found")
+            raise HTTPException(status_code=404, detail=f"Object with phone_number {obj_ph_number} not found")
         self.db.delete(obj)
         self.db.commit()
         self.db.refresh(obj)
         return obj
 
-    def update_phone(self, old_p_number: str, new_p_number: str):
-        user_with_new_p_number = self.db.query(self.db_model).filter(self.db_model.phone_number == new_p_number).first()
+    def update_phone(self, old_ph_number: str, new_ph_number: str):
+        user_with_new_p_number = self.db.query(self.db_model).filter(self.db_model.phone_number == new_ph_number).first()
         if user_with_new_p_number:
-            raise HTTPException(status_code=400, detail=f"Phone_number {new_p_number} is already in use")
-        obj = self.db.query(self.db_model).filter(self.db_model.phone_number == old_p_number).first()
-        obj.phone_number = new_p_number
+            raise HTTPException(status_code=400, detail=f"Phone_number {new_ph_number} is already in use")
+        obj = self.db.query(self.db_model).filter(self.db_model.phone_number == old_ph_number).first()
+        obj.phone_number = new_ph_number
         self.db.add(obj)
         self.db.commit()
         self.db.refresh(obj)
         return obj
 
-
+    def update_name(self, ph_number: str, new_name: str):
+        user_with_p_number = self.db.query(self.db_model).filter(self.db_model.phone_number == ph_number).first()
+        if not user_with_p_number:
+            raise HTTPException(status_code=404, detail=f"Object with phone number {ph_number} not found")
+        obj = self.db.query(self.db_model).filter(self.db_model.phone_number == ph_number).first()
+        obj.name = new_name
+        self.db.add(obj)
+        self.db.commit()
+        self.db.refresh(obj)
+        return obj
