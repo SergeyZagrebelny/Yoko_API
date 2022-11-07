@@ -5,6 +5,7 @@ Template class for CRUD operations
 from typing import Optional, Union
 
 from sqlalchemy.orm import Session
+from sqlalchemy import Enum
 from fastapi import HTTPException
 
 import models, schemas
@@ -39,15 +40,32 @@ class BaseService:
             raise HTTPException(status_code=404, detail=f"Object with phone number {obj_ph_number} not found")
         return obj
 
+    def get_all_by_status(self, status: Enum("started", "ended", "in process", "awaiting", "canceled")):
+        return self.db.query(self.db_model).filter(self.db_model.status == status).all()
+
     def create(self,
-               person: str,
-               data: Optional[Union[schemas.WorkerCreate, schemas.CustomerCreate]]):
-        if person == "worker":
+               entity: str,
+               data: Optional[Union[schemas.WorkerCreate,
+                                    schemas.CustomerCreate,
+                                    schemas.SalesPointCreate,
+                                    schemas.VisitCreate,
+                                    schemas.OrderCreate]]):
+        if entity == "worker":
             db_obj = models.Worker(name=data.name,
                                    phone_number=data.phone_number)
-        elif person == "customer":
+        elif entity == "customer":
             db_obj = models.Customer(name=data.name,
                                      phone_number=data.phone_number)
+        elif entity == "sales_point":
+            db_obj = models.SalesPoint(name=data.name)
+        elif entity == "order":
+            db_obj = models.Order(status=data.status,
+                                  sales_point=data.sales_point,
+                                  customer=data.sales_point,
+                                  worker=data.worker,
+                                  visit=data.visit)
+        #elif entity == "visit":
+        #    db_obj = models.Visit(name=data.name)
         else:
             raise HTTPException(status_code=400, detail=f"Person must be either worker or customer.")
         self.db.add(db_obj)
@@ -72,23 +90,34 @@ class BaseService:
         #self.db.refresh(obj)
         return f"Object with phone number = {obj_ph_number} has just been deleted.", 200
 
-    def update_phone(self, old_ph_number: str, new_ph_number: str):
+    def update_phone(self, obj_id: int, new_ph_number: str):
         user_with_new_p_number = self.db.query(self.db_model).filter(self.db_model.phone_number == new_ph_number).first()
         if user_with_new_p_number:
-            raise HTTPException(status_code=400, detail=f"Phone_number {new_ph_number} is already in use")
-        obj = self.db.query(self.db_model).filter(self.db_model.phone_number == old_ph_number).first()
+            raise HTTPException(status_code=400, detail=f"Phone_number {new_ph_number} is already used.")
+        obj = self.db.query(self.db_model).filter(self.db_model.id == obj_id).first()
+        if not obj:
+            raise HTTPException(status_code=404, detail=f"Object with id {obj_id} not found.")
         obj.phone_number = new_ph_number
         self.db.add(obj)
         self.db.commit()
         self.db.refresh(obj)
         return obj
 
-    def update_name(self, ph_number: str, new_name: str):
-        user_with_p_number = self.db.query(self.db_model).filter(self.db_model.phone_number == ph_number).first()
-        if not user_with_p_number:
-            raise HTTPException(status_code=404, detail=f"Object with phone number {ph_number} not found")
-        obj = self.db.query(self.db_model).filter(self.db_model.phone_number == ph_number).first()
+    def update_name(self, obj_id: int, new_name: str):
+        obj = self.db.query(self.db_model).filter(self.db_model.id == obj_id).first()
+        if not obj:
+            raise HTTPException(status_code=404, detail=f"Object with id {obj_id} not found.")
         obj.name = new_name
+        self.db.add(obj)
+        self.db.commit()
+        self.db.refresh(obj)
+        return obj
+
+    def update_status(self, obj_id: int, new_status: Enum("started", "ended", "in process", "awaiting", "canceled")):
+        obj = self.db.query(self.db_model).filter(self.db_model.id == obj_id).first()
+        if not obj:
+            raise HTTPException(status_code=404, detail=f"Object with id {obj_id} not found.")
+        obj.status = new_status
         self.db.add(obj)
         self.db.commit()
         self.db.refresh(obj)

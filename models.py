@@ -2,7 +2,6 @@ from sqlalchemy import (Column,
                         CHAR,
                         ForeignKey,
                         Integer,
-                        String,
                         DateTime,
                         Enum,
                         SmallInteger)

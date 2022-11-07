@@ -6,8 +6,7 @@ from pydantic import BaseModel
 
 class OrderBase(BaseModel):
     created_at: datetime = datetime.now()
-    closed_at: Optional[datetime] = None
-    status: str = "started"
+    status: str = "awaiting"
     sales_point: int
     customer: int
     worker: int
@@ -20,12 +19,19 @@ class OrderCreate(OrderBase):
 
 class Order(OrderBase):
     id: int
+    closed_at: Optional[datetime] = None
 
     class Config:
         orm_mode = True
 
 
-class VisitBase(BaseModel):
+class VisitDelete(BaseModel):
+
+    class Config:
+        orm_mode = True
+
+
+class VisitCreate(VisitDelete):
     created_at: datetime = datetime.now()
     sales_point: int
     customer: int
@@ -33,15 +39,8 @@ class VisitBase(BaseModel):
     order: int
 
 
-class VisitCreate(VisitBase):
-    pass
-
-
-class Visit(VisitBase):
+class Visit(VisitCreate):
     id: int
-
-    class Config:
-        orm_mode = True
 
 
 class WorkerDelete(BaseModel):
@@ -62,21 +61,21 @@ class Worker(WorkerCreate):
     visits: list[Visit] = []
 
 
-class SalesPointBase(BaseModel):
+class SalesPointDelete(BaseModel):
     name: str
-
-
-class SalesPointCreate(SalesPointBase):
-    pass
-
-
-class SalesPoint(SalesPointBase):
-    id: int
-    workers: list[Worker] = []
-    orders: list[Order] = []
 
     class Config:
         orm_mode = True
+
+
+class SalesPointCreate(SalesPointDelete):
+    pass
+
+
+class SalesPoint(SalesPointDelete):
+    id: int
+    workers: list[Worker] = []
+    orders: list[Order] = []
 
 
 class CustomerDelete(BaseModel):
